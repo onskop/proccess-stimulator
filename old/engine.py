@@ -55,9 +55,14 @@ class SimulationEngine:
         self.env = simpy.Environment()
         self.materials_manager = MaterialsManager()
         self.materials_manager.reset()
+        # registry of tanks / buffers
+        self.tanks = {}
 
     def run(self, until=None):
         self.env.run(until=until)
+
+    def create_tank(self, name, capacity):
+        self.tanks[name] = simpy.Container(self.env, capacity=capacity)
 
     @property
     def now(self):

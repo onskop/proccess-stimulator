@@ -106,3 +106,51 @@ class Chromatography(UnitOperation):
             
             batch.log(f"Completed {self.config.name}, yield {self.config.yield_step*100}%")
             print(f"[{self.env.now:.2f}] Finished Chromatography: {self.config.name}. Yield: {self.config.yield_step*100}%. Final Mass: {final_mass:.2f}g")
+
+
+class PerfusionFermentation(UnitOperation):
+    def run(self, batch: Batch, output_tank_name: str):
+        print(f"[{self.env.now}] Start Perfusion")
+        
+        output_tank = self.engine.tanks[output_tank_name]
+        
+        # Run for 10 days
+        total_duration = 24 * 10 
+        
+        # Loop every hour
+        for hour in range(total_duration):
+            yield self.env.timeout(1) # Wait 1 hour
+            
+            # PRODUCE: Bleed 1 Liter into the tank
+            amount_produced = 1.0 
+            yield output_tank.put(amount_produced) 
+            
+            print(f"[{self.env.now}] Bleed {amount_produced}L to {output_tank_name}")
+
+        print(f"[{self.env.now}] Perfusion Complete")
+
+        
+
+class PeriodicChromatography(UnitOperation):
+    def run(self, input_tank_name: str):
+        input_tank = self.engine.tanks[input_tank_name]
+        
+        while True:
+            # Wait for 24 hours (Cycle time)
+            yield self.env.timeout(24)
+            
+            # Check how much is in the tank
+            volume_to_process = input_tank.level
+            
+            if volume_to_process > 0:
+                print(f"[{self.env.now}] Daily Chroma started. Processing {volume_to_process}L")
+                
+                # CONSUME: Take liquid out of the tank
+                yield input_tank.get(volume_to_process)
+                
+                # Simulate processing time (e.g., 4 hours)
+                yield self.env.timeout(4)
+                
+                print(f"[{self.env.now}] Daily Chroma finished.")
+            else:
+                print(f"[{self.env.now}] Tank empty, skipping Chroma run.")
