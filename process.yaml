@@ -1,0 +1,22 @@
+resources:
+  bioreactor_volume: 500 # Liters
+  chromatography_skids: 1
+
+steps:
+  - type: "MediaPrep"
+    name: "Make Media"
+    duration_hours: 4
+    consumables: { "Glucose": 10, "Yeast": 5 }
+
+  - type: "Fermentation"
+    name: "Main Culture"
+    duration_hours: 336 # 14 days
+    contamination_risk: 0.05
+    growth_rate: 2.5 # g/L per run
+    input_batch: "Make Media"
+
+  - type: "Chromatography"
+    name: "Protein A"
+    cycle_time_hours: 4
+    cycles: 5
+    yield_step: 0.95
